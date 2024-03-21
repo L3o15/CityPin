@@ -31,3 +31,13 @@ body {
     border-radius: 10px;
     text-align: center;
 }
+
+.user_preview_card {
+    background-color: rgba(255, 255, 255, 0.337);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 20px;
+}

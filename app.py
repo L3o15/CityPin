@@ -20,7 +20,9 @@ def login_user(username, password):
 
 @app.route('/userPage')
 def index():
-    if 'username' in session:
+    for key in session:
+        print(key)
+    if 'user' in session:
         conn = sqlite3.connect('./static/data/cityPin.db')
         cursor = conn.cursor()
         cursor.execute(
@@ -50,6 +52,7 @@ def index():
         return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers)
     else:
         return render_template('register.html')
+    
 @app.route('/')
 @app.route('/loginPage')
 def login_page():
@@ -74,8 +77,6 @@ def register():
     
     return redirect(url_for('login_page'))
     
-
-
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
@@ -86,15 +87,38 @@ def login():
         cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         session['user'] = user
-        
+        print("Logged in successfully!")
         return redirect(url_for('index'))
     else:
+        print("Invalid username/password")
         return 'Invalid username/password'
     
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
+
+@app.route('/search')
+def search():
+    return render_template('search.html')
+
+@app.route('/searchUser', methods=['POST'])
+def search_user():
+    user_name = request.form['user_name']
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+            SELECT * FROM users WHERE username LIKE ?
+        ''',
+        ("%" + user_name + "%",)
+    )
+    users = cursor.fetchall()
+    for user in users:
+        print(user)
+    conn.commit()
+    conn.close()
+    return render_template('search.html', users = users)
 
 if __name__ == '__main__':
     app.run(debug=True)
