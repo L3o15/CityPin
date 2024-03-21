@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityPin</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class = "navbar">
+        <h3><a href = "/">Home</a></h3>
+        <button class = "loginButton" id = "loginButton">Login</button>
+    </div>
+   
+    <br><br><br><br><br><br><br><br>
+    <h1>City Pin</h1>
+    
+</body>
+
+<script>
+    document.getElementById("loginButton").addEventListener("click", function(){
+        window.location.href = "/loginPage";
+    });
+</script>
+</html>
