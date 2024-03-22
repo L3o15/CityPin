@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request, send_from_directory, url_for, redirect, session
 import sqlite3
 from datetime import datetime
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -17,17 +18,25 @@ def login_user(username, password):
         return True
     return False
 
+def ottieni_coordinate(nome_citta):
+    geolocatore = Nominatim(user_agent="nome_applicazione")
+    posizione = geolocatore.geocode(nome_citta)
+    if posizione:
+        latitudine = posizione.latitude
+        longitudine = posizione.longitude
+        return latitudine, longitudine
+    else:
+        return None
 
 @app.route('/userPage')
 def index():
-    for key in session:
-        print(key)
     if 'user' in session:
         conn = sqlite3.connect('./static/data/cityPin.db')
         cursor = conn.cursor()
         cursor.execute(
             '''
-            SELECT * FROM post
+            SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
+            FROM post
             JOIN users ON post.user_id = users.id
             JOIN pins ON post.pin_id = pins.id
             WHERE users.id = ?
@@ -36,7 +45,6 @@ def index():
             (session['user'][0],)
         )
         posts = cursor.fetchall()
-        print(posts)
         cursor.execute(
             '''
             SELECT COUNT(*) FROM followers WHERE user_id = ?
@@ -44,7 +52,6 @@ def index():
             (session['user'][0],)
         )
         n_followers = cursor.fetchone()[0]
-        print(n_followers)
         conn.commit()
         conn.close()
         return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers)
@@ -89,10 +96,8 @@ def login():
         cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         session['user'] = user
-        print("Logged in successfully!")
         return redirect(url_for('index'))
     else:
-        print("Invalid username/password")
         return 'Invalid username/password'
    
     
@@ -121,27 +126,28 @@ def user(user_id):
     
     cursor.execute(
         '''
-        SELECT * FROM post
+        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
+        FROM post
         JOIN users ON post.user_id = users.id
         JOIN pins ON post.pin_id = pins.id
         WHERE users.id = ?
             
         ''', 
-        (session['user'][0],)
+        (user[0],)
     )
     posts = cursor.fetchall()
     cursor.execute(
         '''
             SELECT COUNT(*) FROM followers WHERE user_id = ?
         ''', 
-        (session['user'][0],)
+        (user[0],)
     )
     n_followers = cursor.fetchone()[0]
     cursor.execute(
         '''
-        SELECT COUNT(*) FROM followers WHERE user_id = ? AND follower_id = ?
+        SELECT COUNT(*) FROM followers WHERE user_id = ?
         ''',
-        (user_id, session['user'][0])
+        (user[0],)
     )
     is_following = cursor.fetchone()[0]
     conn.commit()
@@ -161,8 +167,6 @@ def search_user():
         ("%" + user_name + "%",)
     )
     users = cursor.fetchall()
-    for user in users:
-        print(user)
     conn.commit()
     conn.close()
     return render_template('search.html', users = users)
@@ -190,37 +194,9 @@ def add_follower(user_id):
                 ''',
                 (user_id, user_follower_id)
             )
-            
-        cursor.execute(
-            '''
-            SELECT * FROM users WHERE id = ?
-            ''',
-            (user_id,)
-        )
-        user = cursor.fetchone()
-        
-        cursor.execute(
-            '''
-            SELECT * FROM post
-            JOIN users ON post.user_id = users.id
-            JOIN pins ON post.pin_id = pins.id
-            WHERE users.id = ?
-                
-            ''', 
-            (session['user'][0],)
-        )
-        posts = cursor.fetchall()
-        cursor.execute(
-            '''
-                SELECT COUNT(*) FROM followers WHERE user_id = ?
-            ''', 
-            (session['user'][0],)
-        )
-        n_followers = cursor.fetchone()[0]
-            
         conn.commit()
         conn.close()
-        return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = 1)
+        return redirect(url_for('user', user_id = user_id))
     else:
         return 'Utente non autenticato', 401
 
@@ -238,40 +214,55 @@ def remove_follower(user_id):
             ''',
             (user_id, user_follower_id)
         )
-        
-        cursor.execute(
-            '''
-            SELECT * FROM users WHERE id = ?
-            ''',
-            (user_id,)
-        )
-        user = cursor.fetchone()
-        
-        cursor.execute(
-            '''
-            SELECT * FROM post
-            JOIN users ON post.user_id = users.id
-            JOIN pins ON post.pin_id = pins.id
-            WHERE users.id = ?
-                
-            ''', 
-            (session['user'][0],)
-        )
-        posts = cursor.fetchall()
-        cursor.execute(
-            '''
-                SELECT COUNT(*) FROM followers WHERE user_id = ?
-            ''', 
-            (session['user'][0],)
-        )
-        n_followers = cursor.fetchone()[0]
-            
         conn.commit()
         conn.close()
-        return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = 0)
+        return redirect(url_for('user', user_id = user_id))
     else:
         return 'Utente non autenticato', 401
 
+
+@app.route('/createPost', methods=['POST'])
+def add_post():
+    if 'user' in session:
+        text = request.form['post_text']
+        city = request.form['city']
+        user_id = session['user'][0]
+        current_date = datetime.now().date()
+        coordinate = ottieni_coordinate(city)
+        conn = sqlite3.connect('./static/data/cityPin.db')
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            '''
+            SELECT id FROM pins WHERE lat = ? AND lon = ?
+            ''',
+            (coordinate[0],coordinate[1])
+        )
+        
+        pin_id = cursor.fetchone()
+
+        
+        if not pin_id:
+            cursor.execute(
+                '''
+                INSERT INTO pins (lat, lon) VALUES (?, ?)
+                ''',
+                (coordinate[0],coordinate[1])
+            )
+            pin_id = cursor.lastrowid
+        else:
+            pin_id = pin_id[0]
+        cursor.execute(
+            '''
+            INSERT INTO post (pin_id, user_id, text, date) VALUES (?, ?, ?, ?)
+            ''',
+            (pin_id, user_id, text, current_date)
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for('index'))
+    else:
+        return 'Utente non autenticato', 401
 
 if __name__ == '__main__':
     app.run(debug=True)

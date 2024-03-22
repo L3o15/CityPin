@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Page</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        .map {
+            height: 200px;
+            margin-bottom: 10px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class = "navbar">
@@ -35,10 +48,32 @@
     <h3>{{n_posts}} post</h3>
 
     
-    <div class = "your_posts">
-        
+    <div class = "posts">
+        {% for post in posts %}
+            <div class="card">
+                <h2>Post: {{ post[2] }}</h2>
+                <p>Date: {{ post[3] }}</p>
+                <div class="map" id="mapid_{{ loop.index }}"></div>
+            </div>
+        {% endfor %}
     </div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        {% for post in posts %}
+            // Inizializza la mappa per il post corrente
+            var map_{{ loop.index }} = L.map('mapid_{{ loop.index }}').setView([{{ post[4] }}, {{ post[5] }}], 13);
+
+            // Aggiungi un layer di mappa (puoi scegliere tra vari provider)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map_{{ loop.index }});
+
+            // Aggiungi un marker alla posizione del post
+            L.marker([{{ post[4] }}, {{ post[5] }}]).addTo(map_{{ loop.index }})
+                .bindPopup('Post: {{ post[2] }}');
+        {% endfor %}
+    </script>
 
 </body>
 

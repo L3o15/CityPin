@@ -26,18 +26,7 @@ cursor.execute(
     '''
 )
 
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS post (
-        pin_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        text TEXT NOT NULL,
-        date DATE NOT NULL,
-        FOREIGN KEY (pin_id) REFERENCES pins(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-    '''
-)
+
 
 cursor.execute(
     '''
@@ -66,7 +55,7 @@ cursor.execute(
 
 # Inserimento di un utente di esempio
 cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', 'admin'))
-"""
+
 cursor.execute(
 '''
 CREATE TABLE IF NOT EXISTS followers (
@@ -76,6 +65,22 @@ CREATE TABLE IF NOT EXISTS followers (
     FOREIGN KEY (follower_id) REFERENCES users(id)
 );
 '''
+)
+
+
+    
+    
+"""
+cursor.execute(
+    '''
+       CREATE TABLE IF NOT EXISTS followers (
+        id INTEGER PRIMARY KEY, 
+        user_id INTEGER NOT NULL,
+        follower_id INTEGER NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (follower_id) REFERENCES users(id)
+    );
+    '''
 )
 
 # Salvataggio delle modifiche e chiusura della connessione
