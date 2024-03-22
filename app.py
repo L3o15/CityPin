@@ -47,20 +47,21 @@ def index():
         print(n_followers)
         conn.commit()
         conn.close()
-        
-        
         return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers)
     else:
         return render_template('register.html')
-    
+
+
 @app.route('/')
 @app.route('/loginPage')
 def login_page():
     return render_template('login.html')
 
+
 @app.route('/registerPage')
 def register_page():
     return render_template('register.html')
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -77,6 +78,7 @@ def register():
     
     return redirect(url_for('login_page'))
     
+    
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
@@ -92,15 +94,60 @@ def login():
     else:
         print("Invalid username/password")
         return 'Invalid username/password'
+   
     
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
 
+
 @app.route('/search')
 def search():
     return render_template('search.html')
+
+
+@app.route('/user/<int:user_id>/')
+def user(user_id):
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT * FROM users WHERE id = ?
+        ''',
+        (user_id,)
+    )
+    user = cursor.fetchone()
+    
+    cursor.execute(
+        '''
+        SELECT * FROM post
+        JOIN users ON post.user_id = users.id
+        JOIN pins ON post.pin_id = pins.id
+        WHERE users.id = ?
+            
+        ''', 
+        (session['user'][0],)
+    )
+    posts = cursor.fetchall()
+    cursor.execute(
+        '''
+            SELECT COUNT(*) FROM followers WHERE user_id = ?
+        ''', 
+        (session['user'][0],)
+    )
+    n_followers = cursor.fetchone()[0]
+    cursor.execute(
+        '''
+        SELECT COUNT(*) FROM followers WHERE user_id = ? AND follower_id = ?
+        ''',
+        (user_id, session['user'][0])
+    )
+    is_following = cursor.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = is_following)
+
 
 @app.route('/searchUser', methods=['POST'])
 def search_user():
@@ -119,6 +166,112 @@ def search_user():
     conn.commit()
     conn.close()
     return render_template('search.html', users = users)
+    
+    
+@app.route('/addFollower/<int:user_id>/', methods=['POST'])
+def add_follower(user_id):
+    if 'user' in session:  
+        user_follower_id = session['user'][0]
+        conn = sqlite3.connect('./static/data/cityPin.db')
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM followers WHERE user_id = ? AND follower_id = ?
+            ''',
+            (user_id, session['user'][0])
+        )
+        is_following = cursor.fetchone()[0]
+        
+        if not is_following:
+            cursor.execute(
+                '''
+                INSERT INTO followers (user_id, follower_id) VALUES (?, ?)
+                ''',
+                (user_id, user_follower_id)
+            )
+            
+        cursor.execute(
+            '''
+            SELECT * FROM users WHERE id = ?
+            ''',
+            (user_id,)
+        )
+        user = cursor.fetchone()
+        
+        cursor.execute(
+            '''
+            SELECT * FROM post
+            JOIN users ON post.user_id = users.id
+            JOIN pins ON post.pin_id = pins.id
+            WHERE users.id = ?
+                
+            ''', 
+            (session['user'][0],)
+        )
+        posts = cursor.fetchall()
+        cursor.execute(
+            '''
+                SELECT COUNT(*) FROM followers WHERE user_id = ?
+            ''', 
+            (session['user'][0],)
+        )
+        n_followers = cursor.fetchone()[0]
+            
+        conn.commit()
+        conn.close()
+        return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = 1)
+    else:
+        return 'Utente non autenticato', 401
+
+
+@app.route('/removeFollower/<int:user_id>/', methods=['POST'])
+def remove_follower(user_id):
+    if 'user' in session:
+        user_follower_id = session['user'][0]
+        conn = sqlite3.connect('./static/data/cityPin.db')
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            '''
+            DELETE FROM followers WHERE user_id = ? AND follower_id = ?
+            ''',
+            (user_id, user_follower_id)
+        )
+        
+        cursor.execute(
+            '''
+            SELECT * FROM users WHERE id = ?
+            ''',
+            (user_id,)
+        )
+        user = cursor.fetchone()
+        
+        cursor.execute(
+            '''
+            SELECT * FROM post
+            JOIN users ON post.user_id = users.id
+            JOIN pins ON post.pin_id = pins.id
+            WHERE users.id = ?
+                
+            ''', 
+            (session['user'][0],)
+        )
+        posts = cursor.fetchall()
+        cursor.execute(
+            '''
+                SELECT COUNT(*) FROM followers WHERE user_id = ?
+            ''', 
+            (session['user'][0],)
+        )
+        n_followers = cursor.fetchone()[0]
+            
+        conn.commit()
+        conn.close()
+        return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = 0)
+    else:
+        return 'Utente non autenticato', 401
+
 
 if __name__ == '__main__':
     app.run(debug=True)
