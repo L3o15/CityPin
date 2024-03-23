@@ -52,6 +52,15 @@ def get_user_posts(user_id):
             (post[0],)
         )
         post += (cursor.fetchone()[0],)
+        
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM likes WHERE post_id = ? AND user_id = ?
+            ''',
+            (post[0], session['user'][0])
+        )
+        
+        post += (cursor.fetchone()[0],)
         ret.append(post)
     conn.commit()
     conn.close()
@@ -128,7 +137,15 @@ def logout():
 
 @app.route('/search')
 def search():
-    return render_template('search.html')
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT * FROM users
+        
+        '''
+    )
+    return render_template('search.html', users = cursor.fetchall())
 
 
 @app.route('/user/<int:user_id>/')
@@ -171,9 +188,9 @@ def search_user():
     cursor = conn.cursor()
     cursor.execute(
         '''
-            SELECT * FROM users WHERE username LIKE ?
+            SELECT * FROM users WHERE username LIKE ? AND id != ?
         ''',
-        ("%" + user_name + "%",)
+        ("%" + user_name + "%", session['user'][0])
     )
     users = cursor.fetchall()
     conn.commit()
@@ -238,6 +255,10 @@ def add_post():
         user_id = session['user'][0]
         current_date = datetime.now().date()
         coordinate = ottieni_coordinate(city)
+        
+        if not coordinate:
+            return 'Città non trovata', 404
+        
         conn = sqlite3.connect('./static/data/cityPin.db')
         cursor = conn.cursor()
         
@@ -294,6 +315,21 @@ def add_like(post_id, user_id):
             ''',
             (post_id, session['user'][0])
         )
+    conn.commit()
+    conn.close()
+    return redirect(url_for('user', user_id = user_id))
+
+
+@app.route('/removeLike/<int:post_id>/<int:user_id>', methods=['POST'])
+def remove_like(post_id, user_id):
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        DELETE FROM likes WHERE post_id = ? AND user_id = ?
+        ''',
+        (post_id, session['user'][0])
+    )
     conn.commit()
     conn.close()
     return redirect(url_for('user', user_id = user_id))

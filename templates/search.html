@@ -16,13 +16,14 @@
     <div class = "search">
         <form action = "/searchUser" method = "POST">
             <input type = "text" name = "user_name" placeholder = "Search user">
+            <br>
             <input type = "submit" value = "Search">
         </form>
     </div>
 
     <div class = "search_result">
-        <h3>Search result</h3>
         <div class = "results">
+            <h3>Search results</h3>
             {% for user in users %}
                 <div class = "user_preview_card">
                     <h4>{{ user[1] }}</h4>
