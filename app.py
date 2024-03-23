@@ -28,23 +28,42 @@ def ottieni_coordinate(nome_citta):
     else:
         return None
 
+def get_user_posts(user_id):
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
+        FROM post
+        JOIN users ON post.user_id = users.id
+        JOIN pins ON post.pin_id = pins.id
+        WHERE users.id = ?
+            
+        ''', 
+        (user_id,)
+    )
+    posts = cursor.fetchall()
+    ret = []
+    for post in posts:
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM likes WHERE post_id = ?
+            ''',
+            (post[0],)
+        )
+        post += (cursor.fetchone()[0],)
+        ret.append(post)
+    conn.commit()
+    conn.close()
+    return ret
+
 @app.route('/userPage')
 def index():
     if 'user' in session:
         conn = sqlite3.connect('./static/data/cityPin.db')
         cursor = conn.cursor()
-        cursor.execute(
-            '''
-            SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
-            FROM post
-            JOIN users ON post.user_id = users.id
-            JOIN pins ON post.pin_id = pins.id
-            WHERE users.id = ?
-            
-            ''', 
-            (session['user'][0],)
-        )
-        posts = cursor.fetchall()
+        
+        posts = get_user_posts(session['user'][0])
         cursor.execute(
             '''
             SELECT COUNT(*) FROM followers WHERE user_id = ?
@@ -124,18 +143,8 @@ def user(user_id):
     )
     user = cursor.fetchone()
     
-    cursor.execute(
-        '''
-        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
-        FROM post
-        JOIN users ON post.user_id = users.id
-        JOIN pins ON post.pin_id = pins.id
-        WHERE users.id = ?
-            
-        ''', 
-        (user[0],)
-    )
-    posts = cursor.fetchall()
+   
+    posts = get_user_posts(user[0])
     cursor.execute(
         '''
             SELECT COUNT(*) FROM followers WHERE user_id = ?
@@ -145,9 +154,9 @@ def user(user_id):
     n_followers = cursor.fetchone()[0]
     cursor.execute(
         '''
-        SELECT COUNT(*) FROM followers WHERE user_id = ?
+        SELECT COUNT(*) FROM followers WHERE user_id = ? AND follower_id = ?
         ''',
-        (user[0],)
+        (user[0], session['user'][0])
     )
     is_following = cursor.fetchone()[0]
     conn.commit()
@@ -263,6 +272,31 @@ def add_post():
         return redirect(url_for('index'))
     else:
         return 'Utente non autenticato', 401
+
+
+@app.route('/addLike/<int:post_id>/<int:user_id>', methods=['POST'])
+def add_like(post_id, user_id):
+    print(post_id)
+    print(user_id)
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT COUNT(*) FROM likes WHERE post_id = ? AND user_id = ?
+        ''',
+        (post_id, session['user'][0])
+    )
+    is_liked = cursor.fetchone()[0]
+    if not is_liked:
+        cursor.execute(
+            '''
+            INSERT INTO likes (post_id, user_id) VALUES (?, ?)
+            ''',
+            (post_id, session['user'][0])
+        )
+    conn.commit()
+    conn.close()
+    return redirect(url_for('user', user_id = user_id))
 
 if __name__ == '__main__':
     app.run(debug=True)

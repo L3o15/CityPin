@@ -53,7 +53,14 @@
             <div class="card">
                 <h2>Post: {{ post[2] }}</h2>
                 <p>Date: {{ post[3] }}</p>
+                <p>{{post[6]}} likes</p>
                 <div class="map" id="mapid_{{ loop.index }}"></div>
+                <form action="/addLike/{{ post[0] }}/{{user[0]}}" method="POST">
+                    <button type="submit" class = "addLikeBotton">Like</button>
+                </form>
+                <form action="/postPage/{{ post[0] }}" method="POST">
+                    <button type="submit" class = "viewCommentsButton">View comments</button>
+                </form>
             </div>
         {% endfor %}
     </div>
