@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request, send_from_directory, url_for, redirect, session
 import sqlite3
+import base64
 from datetime import datetime
 from geopy.geocoders import Nominatim
 
@@ -80,9 +81,12 @@ def index():
             (session['user'][0],)
         )
         n_followers = cursor.fetchone()[0]
+        profile_image = session['user'][5]
+        if profile_image:
+            profile_image = base64.b64encode(profile_image).decode('utf-8')
         conn.commit()
         conn.close()
-        return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers)
+        return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers, profile_image = profile_image)
     else:
         return render_template('register.html')
 
@@ -105,9 +109,16 @@ def register():
     description = request.form['description']
     current_date = datetime.now().date()  # Ottieni solo la data attuale
     
+    profile_image = request.files['profile_image']
+    profile_image_data = profile_image.read() if profile_image.filename != '' else None
+    
     conn = sqlite3.connect('./static/data/cityPin.db')
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO users (username, password, description, creation_date) VALUES (?, ?, ?, ?)', (username, password, description, current_date))
+    
+    # Esegui l'insert nella tabella degli utenti
+    cursor.execute('INSERT INTO users (username, password, description, creation_date, profile_image) VALUES (?, ?, ?, ?, ?)', 
+                   (username, password, description, current_date, sqlite3.Binary(profile_image_data) if profile_image_data else None))
+    
     conn.commit()
     conn.close()
     
@@ -176,9 +187,12 @@ def user(user_id):
         (user[0], session['user'][0])
     )
     is_following = cursor.fetchone()[0]
+    profile_image = user[5]
+    if profile_image:
+        profile_image = base64.b64encode(profile_image).decode('utf-8')
     conn.commit()
     conn.close()
-    return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = is_following)
+    return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = is_following, profile_image = profile_image)
 
 
 @app.route('/searchUser', methods=['POST'])

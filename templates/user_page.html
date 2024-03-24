@@ -8,12 +8,38 @@
 </head>
 <body>
     <div class = "navbar">
-        <h3><a href = "/userPage">My profile</a></h3>
-        <h3><a href = "/search">Search user</a></h3>
-        <h3><a href="{{ url_for('logout') }}">Logout</a></h3>
+        <a class = "navIcon" href = "/userPage">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+            </svg>
+        </a>
+        <a class = "navIcon" href = "/search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path d="M8.25 10.875a2.625 2.625 0 1 1 5.25 0 2.625 2.625 0 0 1-5.25 0Z" />
+                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.125 4.5a4.125 4.125 0 1 0 2.338 7.524l2.007 2.006a.75.75 0 1 0 1.06-1.06l-2.006-2.007a4.125 4.125 0 0 0-3.399-6.463Z" clip-rule="evenodd" />
+            </svg>
+        </a>
+        <a class = "navIcon" href = "/home">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd" />
+            </svg>
+        </a>
+        <a class = "navIcon" href = "/livePositions">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
+            </svg>
+        </a> 
     </div>
     <br><br><br><br><br><br><br><br>
     <div class = "profileInfo">
+        
+        {% if profile_image %}
+            <img class = "profileImage" src="data:image/jpeg;base64,{{ profile_image }}" alt="Immagine del profilo">
+        {% else %}
+            <p>Immagine del profilo non disponibile</p>
+        {% endif %}
+    
+        
         <h1>{{ user[1] }}</h1>
         <h2>Your account details:</h2>
         <h4>{{ user[3] }}</h4>
@@ -23,6 +49,19 @@
         <br>
         <h3>You published {{n_posts}} post</h3>
     </div>
+
+
+
+
+    <!--      ancora da implementare     -->
+    <a class = "editProfileButton" href="">Edit profile</a>
+
+
+
+
+
+    
+    <a class = "logoutButton" href="{{ url_for('logout') }}">Logout</a>
 
     <div class = "createPost">
         <h2>Create a new post</h2>

@@ -73,13 +73,8 @@ CREATE TABLE IF NOT EXISTS followers (
 """
 cursor.execute(
     '''
-       CREATE TABLE IF NOT EXISTS followers (
-        id INTEGER PRIMARY KEY, 
-        user_id INTEGER NOT NULL,
-        follower_id INTEGER NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (follower_id) REFERENCES users(id)
-    );
+        ALTER TABLE users
+        ADD COLUMN profile_image BLOB;
     '''
 )
 

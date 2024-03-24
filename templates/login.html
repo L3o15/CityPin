@@ -9,16 +9,18 @@
 <body>
     <div class = "navbar">
         <h3><a href = "/">Home</a></h3>
-        <button class = "registerButton" id = "registerButton">Register</button>
+        <button class = "loginButton" id = "registerButton">Register</button>
     </div>
    
     <br><br><br><br><br><br><br><br>
     <h1>Login page</h1>
 
-    <form action = "/login" method = "post">
-        <input type = "text" name = "username" placeholder = "Username" required>
-        <input type = "password" name = "password" placeholder = "Password" required>
-        <input type = "submit" value = "Login">
+    <form action = "/login" method = "post" class = "login">
+        <input class = "formField" type = "text" name = "username" placeholder = "Username" required>
+        <br>
+        <input class = "formField" type = "password" name = "password" placeholder = "Password" required>
+        <br>
+        <input class = "formButton" type = "submit" value = "Login">
     </form>
     
 </body>
