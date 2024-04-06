@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, render_template, request, send_from_directory, url_for, redirect, session
 import sqlite3
-import base64
 from datetime import datetime
 from geopy.geocoders import Nominatim
 import bcrypt
@@ -57,7 +56,7 @@ def get_user_posts(user_id):
     cursor = conn.cursor()
     cursor.execute(
         '''
-        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon 
+        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon, post.arrival_date, post.departure_date 
         FROM post
         JOIN users ON post.user_id = users.id
         JOIN pins ON post.pin_id = pins.id
@@ -145,10 +144,10 @@ def register():
     if profile_image and allowed_file(profile_image.filename):
         # Sicuro il nome del file e lo salva nella cartella del progetto
         filename = secure_filename(profile_image.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], username + "_" + filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], username + "_profileImg.png")
         profile_image.save(filepath)
         # Costruisci l'URL dell'immagine
-        image_url = url_for('static', filename=f'profile_images/{username}_{filename}')
+        image_url = url_for('static', filename=f'profile_images/{username}_profileImg.png')
     else:
         # Se il file non è valido, restituisci un errore
         return 'Invalid file', 400
@@ -197,7 +196,7 @@ def search():
         
         '''
     )
-    return render_template('search.html', users = cursor.fetchall())
+    return render_template('search.html', users = cursor.fetchall(), utente = session['user'])
 
 
 @app.route('/user/<int:user_id>/')
@@ -241,7 +240,7 @@ def search_user():
     cursor = conn.cursor()
     cursor.execute(
         '''
-            SELECT * FROM users WHERE username LIKE ? AND id != ?
+            SELECT * FROM users WHERE username LIKE ? AND users.id != ?
         ''',
         ("%" + user_name + "%", session['user'][0])
     )
@@ -305,6 +304,10 @@ def add_post():
     if 'user' in session:
         text = request.form['post_text']
         city = request.form['city']
+        arrival_date = request.form['arrival_date']
+        departure_date = request.form['departure_date']
+        print(arrival_date)
+        print(departure_date)
         user_id = session['user'][0]
         current_date = datetime.now().date()
         coordinate = ottieni_coordinate(city)
@@ -337,9 +340,9 @@ def add_post():
             pin_id = pin_id[0]
         cursor.execute(
             '''
-            INSERT INTO post (pin_id, user_id, text, date) VALUES (?, ?, ?, ?)
+            INSERT INTO post (pin_id, user_id, text, date, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?, ?)
             ''',
-            (pin_id, user_id, text, current_date)
+            (pin_id, user_id, text, current_date, arrival_date, departure_date)
         )
         conn.commit()
         conn.close()
@@ -386,6 +389,70 @@ def remove_like(post_id, user_id):
     conn.commit()
     conn.close()
     return redirect(url_for('user', user_id = user_id))
+
+
+@app.route('/updateAccount', methods=['POST'])
+def updateAccount():
+    username = request.form['username']
+    
+    # Verifica se lo username è già presente nel database
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM users WHERE username = ?', (username,))
+    existing_user_count = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    # Se esiste già un utente con lo stesso username, restituisci un messaggio di errore
+    if existing_user_count > 0 and username != session['user'][1]:
+        return 'Username already exists', 400
+    
+    
+    description = request.form['description']
+    image_url = ""
+    
+    if 'profile_image' in request.files:
+        profile_image = request.files['profile_image']
+        
+        # Controlla se il nome del file è valido
+        if profile_image and allowed_file(profile_image.filename):
+            # Sicuro il nome del file e lo salva nella cartella del progetto
+            filename = secure_filename(profile_image.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], username + "_profileImg.png")
+            profile_image.save(filepath)
+            # Costruisci l'URL dell'immagine
+            image_url = url_for('static', filename=f'profile_images/{username}_profileImg.png')
+        
+    id = session['user'][0]
+    
+    if image_url == "":
+        conn = sqlite3.connect('./static/data/cityPin.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT profile_image FROM users WHERE id = ?', (id,))
+        image_url = cursor.fetchone()[0]
+        conn.commit()
+        conn.close()
+    # Esegui l'aggiornamento nella tabella degli utenti
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE users SET description = ?, profile_image = ?, username = ? WHERE id = ?', 
+                   (description, image_url, username, id))
+    
+    posts = get_user_posts(session['user'][0])
+    cursor.execute(
+            '''
+            SELECT COUNT(*) FROM followers WHERE user_id = ?
+            ''', 
+        (session['user'][0],)
+    )
+    n_followers = cursor.fetchone()[0]
+    profile_image = session['user'][5]
+    session['user'] = cursor.execute('SELECT * FROM users WHERE id = ?', (id,)).fetchone()
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('index', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers, profile_image = profile_image))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

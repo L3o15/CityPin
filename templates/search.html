@@ -43,12 +43,14 @@
         <div class = "results">
             <h3>Search results</h3>
             {% for user in users %}
+                {% if user[0] != utente[0] %}
                 <div class = "user_preview_card">
                     <h4>{{ user[1] }}</h4>
                     <a href = "/user/{{ user[0] }}">View profile</a>
                     <p>{{ user[3] }}</p>
                     <p>On CityPin since {{ user[4] }}!</p>
                 </div>
+                {% endif %}
             {% endfor %}
         </div>
 </body>
