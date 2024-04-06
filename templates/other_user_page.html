@@ -46,7 +46,7 @@
 
     <br><br><br><br><br><br><br><br>
     {% if profile_image %}
-        <img class = "profileImage" src="data:image/jpeg;base64,{{ profile_image }}" alt="Immagine del profilo">
+        <img class = "profileImage" src={{ profile_image }} alt="Immagine del profilo">
     {% else %}
         <p>Immagine del profilo non disponibile</p>
     {% endif %}

@@ -1,83 +1,51 @@
 import sqlite3
+import bcrypt
 
+def hash_password(password):
+    # Genera un salt (sale) casuale
+    salt = bcrypt.gensalt()
+    # Hasha la password con il sale
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password
+
+# Connessione al database
 conn = sqlite3.connect('./static/data/cityPin.db')
 cursor = conn.cursor()
 
+# Crea una nuova tabella con la struttura desiderata
 
-"""
-# Creazione della tabella degli utenti
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL
-    );
-    '''
-)
+# Seleziona tutti gli utenti dal database
+cursor.execute('SELECT * FROM users')
+users = cursor.fetchall()
 
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS pins (
-        id INTEGER PRIMARY KEY,
-        lat REAL NOT NULL,
-        lon REAL NOT NULL
-    );
-    '''
-)
-
-
-
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS likes (
-        post_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        FOREIGN KEY (post_id) REFERENCES post(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-    '''
-)
-
-cursor.execute(
-    '''
-    CREATE TABLE IF NOT EXISTS comments (
-        post_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        text TEXT NOT NULL,
-        date DATE NOT NULL,
-        FOREIGN KEY (post_id) REFERENCES post(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-    '''
-)
-
-
-# Inserimento di un utente di esempio
-cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', 'admin'))
-
-cursor.execute(
-'''
-CREATE TABLE IF NOT EXISTS followers (
-    user_id INTEGER NOT NULL,
-    follower_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (follower_id) REFERENCES users(id)
-);
-'''
-)
-
-
+# Per ogni utente, hasha la password esistente e inserisci i dati nella nuova tabella
+i = 0
+for user in users:
     
-    
-"""
-cursor.execute(
-    '''
-        ALTER TABLE users
-        ADD COLUMN profile_image BLOB;
-    '''
-)
+    if user[1] == 'admin':
+        continue
+    i += 1
+    user_id = i
+    username = user[1]
+    password = user[5]
+    description = user[2]
+    creation_date = user[3]
+    profile_image = user[4]
 
-# Salvataggio delle modifiche e chiusura della connessione
+    # Inserisci i dati nella nuova tabella
+    cursor.execute('''
+        INSERT INTO users_new (id, username, password, description, creation_date, profile_image)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (user_id, username, password, description, creation_date, profile_image))
+
+# Elimina la vecchia tabella degli utenti
+cursor.execute('DROP TABLE users')
+
+# Rinomina la nuova tabella per chiamarla "users"
+cursor.execute('ALTER TABLE users_new RENAME TO users')
+
+# Committa le modifiche al database
 conn.commit()
+
+# Chiude la connessione
 conn.close()

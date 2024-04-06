@@ -3,20 +3,43 @@ import sqlite3
 import base64
 from datetime import datetime
 from geopy.geocoders import Nominatim
+import bcrypt
+import os 
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
 app.secret_key = 'super secret key'
 
+UPLOAD_FOLDER = './static/profile_images/'  # Cartella in cui salvare le immagini
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Estensioni di file consentite
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def hash_password(password):
+    # Genera un salt (sale) casuale
+    salt = bcrypt.gensalt()
+    # Hasha la password con il sale
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password
+
 def login_user(username, password):
     conn = sqlite3.connect('./static/data/cityPin.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
-    user = cursor.fetchone()  # Ottieni la prima riga corrispondente
+
+    # Esegui una query per ottenere la password hashata dell'utente dal database
+    cursor.execute('SELECT password FROM users WHERE username = ?', (username,))
+    hashed_password = cursor.fetchone()
+
     conn.close()  # Chiudi la connessione al database
-    
-    if user:
-        return True
+
+    if hashed_password:
+        # Se è stata trovata una password hashata nel database, confrontala con la password fornita dall'utente
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password[0]):
+            # Se le password corrispondono, restituisci True
+            return True
+
+    # Se non viene trovata una corrispondenza dell'utente o se le password non corrispondono, restituisci False
     return False
 
 def ottieni_coordinate(nome_citta):
@@ -67,6 +90,10 @@ def get_user_posts(user_id):
     conn.close()
     return ret
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route('/userPage')
 def index():
     if 'user' in session:
@@ -82,8 +109,6 @@ def index():
         )
         n_followers = cursor.fetchone()[0]
         profile_image = session['user'][5]
-        if profile_image:
-            profile_image = base64.b64encode(profile_image).decode('utf-8')
         conn.commit()
         conn.close()
         return render_template('user_page.html', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers, profile_image = profile_image)
@@ -106,29 +131,45 @@ def register_page():
 def register():
     username = request.form['username']
     password = request.form['password']
+    hashed_password = hash_password(password)
     description = request.form['description']
     current_date = datetime.now().date()  # Ottieni solo la data attuale
     
+    # Controlla se il file è stato fornito nella richiesta
+    if 'profile_image' not in request.files:
+        return 'File not provided', 400
+
     profile_image = request.files['profile_image']
-    profile_image_data = profile_image.read() if profile_image.filename != '' else None
+    
+    # Controlla se il nome del file è valido
+    if profile_image and allowed_file(profile_image.filename):
+        # Sicuro il nome del file e lo salva nella cartella del progetto
+        filename = secure_filename(profile_image.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], username + "_" + filename)
+        profile_image.save(filepath)
+        # Costruisci l'URL dell'immagine
+        image_url = url_for('static', filename=f'profile_images/{username}_{filename}')
+    else:
+        # Se il file non è valido, restituisci un errore
+        return 'Invalid file', 400
     
     conn = sqlite3.connect('./static/data/cityPin.db')
     cursor = conn.cursor()
     
     # Esegui l'insert nella tabella degli utenti
     cursor.execute('INSERT INTO users (username, password, description, creation_date, profile_image) VALUES (?, ?, ?, ?, ?)', 
-                   (username, password, description, current_date, sqlite3.Binary(profile_image_data) if profile_image_data else None))
+                   (username, hashed_password, description, current_date, image_url))
     
     conn.commit()
     conn.close()
     
     return redirect(url_for('login_page'))
     
-    
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
     password = request.form['password']
+    
     if login_user(username, password):
         conn = sqlite3.connect('./static/data/cityPin.db')
         cursor = conn.cursor()
@@ -188,8 +229,6 @@ def user(user_id):
     )
     is_following = cursor.fetchone()[0]
     profile_image = user[5]
-    if profile_image:
-        profile_image = base64.b64encode(profile_image).decode('utf-8')
     conn.commit()
     conn.close()
     return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = is_following, profile_image = profile_image)
