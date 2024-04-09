@@ -24,34 +24,44 @@
                 <path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd" />
             </svg>
         </a>
-        <a class = "navIcon" href = "/livePositions">
+        <a class = "navIcon" href = "/positions">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clip-rule="evenodd" />
             </svg>
         </a> 
     </div>
     <br><br><br><br><br><br><br><br>
-    <div class = "search">
+    <div class = "login">
         <form action = "/searchUser" method = "POST">
-            <input type = "text" name = "user_name" placeholder = "Search user">
+            <input class = "formField" type = "text" name = "user_name" placeholder = "Search user">
             <br>
-            <input type = "submit" value = "Search">
+            <input class = "formButton" type = "submit" value = "Search">
         </form>
     </div>
 
-    <div class = "search_result">
-        <div class = "results">
-            <h3>Search results</h3>
-            {% for user in users %}
-                {% if user[0] != utente[0] %}
+    <div class = "results">
+        {% for user in users %}
+            {% if user[0] != utente[0] %}
                 <div class = "user_preview_card">
-                    <h4>{{ user[1] }}</h4>
-                    <a href = "/user/{{ user[0] }}">View profile</a>
-                    <p>{{ user[3] }}</p>
-                    <p>On CityPin since {{ user[4] }}!</p>
+                    <div class = "profileImg">
+                        {% if user[5] and user[5] != "" %}
+                            <img class = "profileImageSearch" src={{ user[5] }} alt="Immagine del profilo">
+                        {% else %}
+                            <svg  class = "profileImageSearch" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                        {% endif %}
+                    </div>
+
+                    <h2>{{ user[1] }}</h2>
+                    <a href = "/user/{{ user[0] }}">
+                        <svg class = "icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </a>
                 </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 </body>
 </html>

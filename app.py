@@ -5,6 +5,7 @@ from geopy.geocoders import Nominatim
 import bcrypt
 import os 
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -68,26 +69,63 @@ def get_user_posts(user_id):
     posts = cursor.fetchall()
     ret = []
     for post in posts:
-        cursor.execute(
-            '''
-            SELECT COUNT(*) FROM likes WHERE post_id = ?
-            ''',
-            (post[0],)
-        )
-        post += (cursor.fetchone()[0],)
-        
-        cursor.execute(
-            '''
-            SELECT COUNT(*) FROM likes WHERE post_id = ? AND user_id = ?
-            ''',
-            (post[0], session['user'][0])
-        )
-        
-        post += (cursor.fetchone()[0],)
-        ret.append(post)
+        ret.append(get_post_info(post[0]))
     conn.commit()
     conn.close()
     return ret
+
+def get_post_info(post_id):
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT post.id, users.username, post.text, post.date, pins.lat, pins.lon, post.arrival_date, post.departure_date 
+        FROM post
+        JOIN users ON post.user_id = users.id
+        JOIN pins ON post.pin_id = pins.id
+        WHERE post.id = ?
+        ''', 
+        (post_id,)
+    )
+    post = cursor.fetchone()
+    cursor.execute(
+        '''
+        SELECT COUNT(*) FROM likes WHERE post_id = ?
+        ''',
+        (post[0],)
+    )
+    post += (cursor.fetchone()[0],)
+    
+    cursor.execute(
+        '''
+        SELECT COUNT(*) FROM likes WHERE post_id = ? AND user_id = ?
+        ''',
+        (post[0], session['user'][0])
+    )
+    
+    post += (cursor.fetchone()[0],)
+    
+    cursor.execute(
+        '''
+        SELECT users.profile_image FROM users WHERE users.username = ?
+        ''',
+        (post[1],)
+    )
+    
+    post += (cursor.fetchone()[0],)
+    
+    cursor.execute(
+        '''
+        SELECT users.id FROM users WHERE users.username = ?
+        ''',
+        (post[1],)
+    )
+    
+    post += (cursor.fetchone()[0],)
+    
+    conn.commit()
+    conn.close()
+    return post
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -233,6 +271,21 @@ def user(user_id):
     return render_template('other_user_page.html', user = user, posts = posts, n_posts = len(posts), n_followers = n_followers, is_following = is_following, profile_image = profile_image)
 
 
+@app.route('/userPage/<username>')
+def user_page(username):
+    print(username)
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT users.id FROM users WHERE username = ?
+        ''',
+        (username,)
+    )
+    user_id = cursor.fetchone()[0]
+    return redirect(url_for('user', user_id = user_id))
+
+
 @app.route('/searchUser', methods=['POST'])
 def search_user():
     user_name = request.form['user_name']
@@ -247,7 +300,7 @@ def search_user():
     users = cursor.fetchall()
     conn.commit()
     conn.close()
-    return render_template('search.html', users = users)
+    return render_template('search.html', users = users, utente = session['user'])
     
     
 @app.route('/addFollower/<int:user_id>/', methods=['POST'])
@@ -351,10 +404,8 @@ def add_post():
         return 'Utente non autenticato', 401
 
 
-@app.route('/addLike/<int:post_id>/<int:user_id>', methods=['POST'])
-def add_like(post_id, user_id):
-    print(post_id)
-    print(user_id)
+@app.route('/addLike/<int:post_id>/<int:user_id>/<int:h>', methods=['POST'])
+def add_like(post_id, user_id, h):
     conn = sqlite3.connect('./static/data/cityPin.db')
     cursor = conn.cursor()
     cursor.execute(
@@ -373,11 +424,15 @@ def add_like(post_id, user_id):
         )
     conn.commit()
     conn.close()
+    if h == 1:
+        return redirect(url_for('home'))
+    elif h == 2:
+        return redirect(url_for('user_page', username = user_id))
     return redirect(url_for('user', user_id = user_id))
 
 
-@app.route('/removeLike/<int:post_id>/<int:user_id>', methods=['POST'])
-def remove_like(post_id, user_id):
+@app.route('/removeLike/<int:post_id>/<int:user_id>/<int:h>', methods=['POST'])
+def remove_like(post_id, user_id, h):
     conn = sqlite3.connect('./static/data/cityPin.db')
     cursor = conn.cursor()
     cursor.execute(
@@ -388,6 +443,10 @@ def remove_like(post_id, user_id):
     )
     conn.commit()
     conn.close()
+    if h == 1:
+        return redirect(url_for('home'))
+    elif h == 2:
+        return redirect(url_for('user_page', username = user_id))
     return redirect(url_for('user', user_id = user_id))
 
 
@@ -453,6 +512,123 @@ def updateAccount():
     
     return redirect(url_for('index', user=session['user'], posts = posts, n_posts = len(posts), n_followers = n_followers, profile_image = profile_image))
 
+
+@app.route('/home')
+def home():
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        SELECT user_id 
+        FROM followers 
+        WHERE followers.follower_id = ?
+        ''', (session['user'][0],)
+    )
+    follows_id = cursor.fetchall()
+    for i in range(len(follows_id)):
+        follows_id[i] = follows_id[i][0]
+        
+    posts = []
+    for id in follows_id:
+        posts += get_user_posts(id)
+        
+    posts = sorted(posts, key=lambda x: x[3], reverse=True)
+    
+    return render_template('home.html', posts = posts, user = session['user'])
+
+
+@app.route('/positions', methods=['GET', 'POST'])
+def positions():
+    if request.method == 'GET':
+        return render_template('positions.html', default = True, user = session['user'])
+    else:
+        username = request.form.get('username')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        city = request.form.get('city')
+        pos = []
+        
+        if username:
+            conn = sqlite3.connect('./static/data/cityPin.db')
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT * FROM users WHERE username = ?
+                ''',
+                (username,)
+            )
+            user = cursor.fetchone()
+            if not user:
+                return render_template('positions.html', error = 'Utente non trovato', user = session['user'])
+            pos = get_user_posts(user[0])
+            conn.commit()
+            conn.close()
+            if start_date and end_date:
+                start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+                pos = [x for x in pos if (x[6] == "" and x[7] == "") or 
+                            (x[6] is not None and datetime.strptime(x[6], '%Y-%m-%d') >= start_date_obj and 
+                            x[7] is not None and datetime.strptime(x[7], '%Y-%m-%d') <= end_date_obj)]
+            if city:
+                coord = ottieni_coordinate(city)
+                if not coord:
+                    return render_template('positions.html', error = 'Città non trovata', user = session['user'])
+                pos = [x for x in pos if x[4] == coord[0] and x[5] == coord[1]]
+            if not pos:
+                return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
+            return render_template('positions.html', pos = pos, default = False, user = session['user'])
+        elif(start_date and end_date):
+            conn = sqlite3.connect('./static/data/cityPin.db')
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT * FROM post WHERE arrival_date >= ? AND departure_date <= ?
+                ''',
+                (start_date, end_date)
+            )
+
+            positions = cursor.fetchall()
+            
+            conn.commit()
+            conn.close()
+            pos = []
+            for post in positions:
+                pos.append(get_post_info(post[0]))
+            
+            if city:
+                coord = ottieni_coordinate(city)
+                if not coord:
+                    return render_template('positions.html', error = 'Città non trovata', user = session['user'])
+                pos = [x for x in pos if x[4] == coord[0] and x[5] == coord[1]]
+            if not pos:
+                return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
+            return render_template('positions.html', pos = pos, default = False, user = session['user'])
+        elif city:
+            conn = sqlite3.connect('./static/data/cityPin.db')
+            cursor = conn.cursor()
+            coord = ottieni_coordinate(city)
+            if not coord:
+                return render_template('positions.html', error = 'Città non trovata', user = session['user'])
+            cursor.execute(
+                '''
+                SELECT * 
+                FROM post JOIN pins ON post.pin_id = pins.id
+                WHERE lat = ? AND lon = ?
+                ''',
+                (coord[0], coord[1])
+            )
+            positions = cursor.fetchall()
+            
+            conn.commit()
+            conn.close()
+            pos = []
+            for post in positions:
+                pos.append(get_post_info(post[0]))
+            if not pos:
+                return render_template('positions.html', error = 'Nessuna infornazione trovata')
+            return render_template('positions.html', pos = pos, default = False, user = session['user'])
+            
+        return render_template('positions.html', default = True, user = session['user'])
 
 if __name__ == '__main__':
     app.run(debug=True)
