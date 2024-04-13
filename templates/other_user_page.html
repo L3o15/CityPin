@@ -105,7 +105,7 @@
                     <div class="map" id="mapid_{{ loop.index }}"></div>
                     <div class = "flex_orizzontale_full">
                         {% if not post['is_liked'] %}
-                        <form action="/addLike/{{ post['id'] }}/{{user[0]}}/1" method="POST" class = "formLike">
+                        <form action="/addLike/{{ post['id'] }}/{{user[0]}}/0" method="POST" class = "formLike">
                             <button type="submit" class = "likeButton">
                                 
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -115,7 +115,7 @@
                             <p> {{post['n_likes']}}</p>
                         </form>
                         {% else %}
-                        <form action="/removeLike/{{ post['id'] }}/{{user[0]}}/1" method="POST" class = "formLike">
+                        <form action="/removeLike/{{ post['id'] }}/{{user[0]}}/0" method="POST" class = "formLike">
                             <button type="submit" class = "likeButton">
                                 
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
