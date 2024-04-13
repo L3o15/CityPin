@@ -11,12 +11,6 @@
             height: 200px;
             margin-bottom: 10px;
         }
-        .card {
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-        }
     </style>
 </head>
 <body>
@@ -52,48 +46,48 @@
                 <div class = "flex_orizzontale_full">
                     <div class = "flex_orizzontale">
                         <div class = "profileImg">
-                            {% if post[10] and post[10] != "" %}
-                                <img class = "profileImageSearch" src={{ post[10] }} alt="Immagine del profilo">
+                            {% if post['profile_image'] and post['profile_image'] != "" %}
+                                <img class = "profileImageSearch" src={{ post['profile_image'] }} alt="Immagine del profilo">
                             {% else %}
                                 <svg  class = "profileImageSearch" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                 </svg>
                             {% endif %}
                         </div>
-                        <a class = "linkUserPage" href="{{ url_for('user_page', username=post[1]) }}"><h1>{{ post[1] }}</h1></a>
+                        <a class = "linkUserPage" href="{{ url_for('user_page', username=post['username']) }}"><h1>{{ post['username'] }}</h1></a>
                     </div>
-                    <p>{{post[3]}}</p>
+                    <p>{{post['date']}}</p>
                 </div>
-                <h2>{{ post[2] }}</h2>
+                <h2>{{ post['text'] }}</h2>
                 <div class = "flex_orizzontale_full">
-                    <h3>{{ post[6] }}</h3>
-                    <h3>{{ post[7] }}</h3>
+                    <h3>{{ post['arrival_date'] }}</h3>
+                    <h3>{{ post['departure_date'] }}</h3>
                 </div>
 
                 <div class="map" id="mapid_{{ loop.index }}"></div>
                 <div class = "flex_orizzontale_full">
-                    {% if not post[9] %}
-                    <form action="/addLike/{{ post[0] }}/{{user[0]}}/1" method="POST" class = "formLike">
+                    {% if not post['is_liked'] %}
+                    <form action="/addLike/{{ post['id'] }}/{{user[0]}}/1" method="POST" class = "formLike">
                         <button type="submit" class = "likeButton">
                             
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                             </svg>
                           </button>
-                          <p> {{post[8]}}</p>
+                          <p> {{post['n_likes']}}</p>
                     </form>
                     {% else %}
-                    <form action="/removeLike/{{ post[0] }}/{{user[0]}}/1" method="POST" class = "formLike">
+                    <form action="/removeLike/{{ post['id'] }}/{{user[0]}}/1" method="POST" class = "formLike">
                         <button type="submit" class = "likeButton">
                             
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                                 <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                             </svg>                              
                         </button>
-                        <p> {{post[8]}}</p>
+                        <p> {{post['n_likes']}}</p>
                     </form>
                     {% endif %}
-                    <form action="/postPage/{{ post[0] }}" method="POST">
+                    <form action="/postPage/{{ post['id'] }}" method="POST">
                         <button type="submit" class = "viewCommentsButton">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
@@ -110,7 +104,7 @@
     <script>
         {% for post in posts %}
             // Inizializza la mappa per il post corrente
-            var map_{{ loop.index }} = L.map('mapid_{{ loop.index }}').setView([{{ post[4] }}, {{ post[5] }}], 13);
+            var map_{{ loop.index }} = L.map('mapid_{{ loop.index }}').setView([{{ post['lat'] }}, {{ post['lon'] }}], 13);
 
             // Aggiungi un layer di mappa (puoi scegliere tra vari provider)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -118,8 +112,8 @@
             }).addTo(map_{{ loop.index }});
 
             // Aggiungi un marker alla posizione del post
-            L.marker([{{ post[4] }}, {{ post[5] }}]).addTo(map_{{ loop.index }})
-                .bindPopup('Post: {{ post[2] }}');
+            L.marker([{{ post['lat'] }}, {{ post['lon'] }}]).addTo(map_{{ loop.index }})
+                .bindPopup('Post: {{ post["text"] }}');
         {% endfor %}
     </script>
 

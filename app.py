@@ -125,7 +125,21 @@ def get_post_info(post_id):
     
     conn.commit()
     conn.close()
-    return post
+    ret = {
+        'id': post[0],
+        'username': post[1],
+        'text': post[2],
+        'date': post[3],
+        'lat': post[4],
+        'lon': post[5],
+        'arrival_date': post[6],
+        'departure_date': post[7],
+        'n_likes': post[8],
+        'is_liked': post[9],
+        'profile_image': post[10],
+        'user_id': post[11]
+    }
+    return ret
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -532,7 +546,7 @@ def home():
     for id in follows_id:
         posts += get_user_posts(id)
         
-    posts = sorted(posts, key=lambda x: x[3], reverse=True)
+    posts = sorted(posts, key=lambda x: x['date'], reverse=True)
     
     return render_template('home.html', posts = posts, user = session['user'])
 
@@ -566,14 +580,14 @@ def positions():
             if start_date and end_date:
                 start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
                 end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
-                pos = [x for x in pos if (x[6] == "" and x[7] == "") or 
-                            (x[6] is not None and datetime.strptime(x[6], '%Y-%m-%d') >= start_date_obj and 
-                            x[7] is not None and datetime.strptime(x[7], '%Y-%m-%d') <= end_date_obj)]
+                pos = [x for x in pos if (x['arrival_date'] == "" and x['departure_date'] == "") or 
+                            (x['arrival_date'] is not None and datetime.strptime(x['arrival_date'], '%Y-%m-%d') >= start_date_obj and 
+                            x['departure_date'] is not None and datetime.strptime(x['departure_date'], '%Y-%m-%d') <= end_date_obj)]
             if city:
                 coord = ottieni_coordinate(city)
                 if not coord:
                     return render_template('positions.html', error = 'Città non trovata', user = session['user'])
-                pos = [x for x in pos if x[4] == coord[0] and x[5] == coord[1]]
+                pos = [x for x in pos if x['lat'] == coord[0] and x['lon'] == coord[1]]
             if not pos:
                 return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
             return render_template('positions.html', pos = pos, default = False, user = session['user'])
@@ -593,13 +607,13 @@ def positions():
             conn.close()
             pos = []
             for post in positions:
-                pos.append(get_post_info(post[0]))
+                pos.append(get_post_info(post['id']))
             
             if city:
                 coord = ottieni_coordinate(city)
                 if not coord:
                     return render_template('positions.html', error = 'Città non trovata', user = session['user'])
-                pos = [x for x in pos if x[4] == coord[0] and x[5] == coord[1]]
+                pos = [x for x in pos if x['lat'] == coord[0] and x['lon'] == coord[1]]
             if not pos:
                 return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
             return render_template('positions.html', pos = pos, default = False, user = session['user'])
