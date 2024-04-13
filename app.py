@@ -123,6 +123,26 @@ def get_post_info(post_id):
     
     post += (cursor.fetchone()[0],)
     
+    post_comments = cursor.execute(
+        '''
+        SELECT comments.id, comments.text, comments.date, users.username, users.profile_image, users.id
+        FROM comments JOIN users ON comments.user_id = users.id
+        WHERE comments.post_id = ?
+        ''',
+        (post[0],)
+    ).fetchall()
+    
+    post_comm = []
+    for c in post_comments:
+        post_comm.append({
+            'id': c[0],
+            'comment': c[1],
+            'date': c[2],
+            'username': c[3],
+            'profile_image': c[4],
+            'user_id': c[5]
+        })
+    
     conn.commit()
     conn.close()
     ret = {
@@ -137,7 +157,9 @@ def get_post_info(post_id):
         'n_likes': post[8],
         'is_liked': post[9],
         'profile_image': post[10],
-        'user_id': post[11]
+        'user_id': post[11],
+        'comments': post_comm,
+        'n_comments': len(post_comm)
     }
     return ret
 
@@ -607,7 +629,7 @@ def positions():
             conn.close()
             pos = []
             for post in positions:
-                pos.append(get_post_info(post['id']))
+                pos.append(get_post_info(post[0]))
             
             if city:
                 coord = ottieni_coordinate(city)
@@ -643,6 +665,46 @@ def positions():
             return render_template('positions.html', pos = pos, default = False, user = session['user'])
             
         return render_template('positions.html', default = True, user = session['user'])
+
+
+@app.route('/addComment/<int:post_id>/<int:h>', methods=['POST'])
+def addComment(post_id, h):
+    text = request.form['comment']
+    user_id = session['user'][0]
+    current_date = datetime.now().date()
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        INSERT INTO comments (post_id, user_id, text, date) VALUES (?, ?, ?, ?)
+        ''',
+        (post_id, user_id, text, current_date)
+    )
+    conn.commit()
+    conn.close()
+    print("h" + str(h) + " user_id" + str(user_id))
+    if h == 0:
+        return redirect(url_for('home'))
+    if h == session['user'][0]:
+        return redirect(url_for('index'))
+    return redirect(url_for('user', user_id = h))
+
+
+@app.route('/deletePost/<int:post_id>')
+def delete_post(post_id):
+    conn = sqlite3.connect('./static/data/cityPin.db')
+    cursor = conn.cursor()
+    cursor.execute(
+        '''
+        DELETE FROM post WHERE id = ?
+        ''',
+        (post_id,)
+    )
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('index'))
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

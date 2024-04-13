@@ -321,7 +321,7 @@ form {
     background-color: rgba(255, 255, 255, 0.337);
     width: 400px;
     height: 600px;
-    margin-bottom: 20px;
+    margin: 30px;
     border: 1px solid blue;
     border-radius: 30px;
     padding: 10px;
@@ -335,8 +335,46 @@ form {
     margin: 30px;
     width: 90%;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.profileImageComment{
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin: 3px;
+    color: black;
+}
+
+.usernameComment{
+    font-size: 8px;
+    color: black;
+}
+
+.comment{
+    display: flex;
+    width: 90%;
+    flex-direction: column;
+    align-items: left;
+    justify-content: space-evenly;
+    stroke: black;
+}
+
+.comments{
+    background: rgba(255, 255, 255, 0.337);
+    display: flex;
+    width: 600px;
+    height: 500px;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 30px;
+    overflow-y: auto;
+}
+
+hr{
+    width: 90%;
+    color: black;
 }
