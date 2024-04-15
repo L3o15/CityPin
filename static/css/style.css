@@ -1,9 +1,17 @@
+/*
+    COLORE0 = d1eaf6
+    COLORE1 = 000814
+    COLORE2 = 001d3d
+    COLORE3 = 003566
+    COLORE4 = ffc300
+    COLORE5 = ffd60a
+*/
 body {
-    background-color: rgb(50, 224, 255);
+    background-color: #001d3d; /* COLORE1 */
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    color: rgb(255,255,255);
+    color: #d1eaf6; /* COLORE0 */
 }
 
 .navbar {
@@ -14,7 +22,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.338);
+    background-color: #a3f7a8; /* COLORE1 */
     padding: 10px;
     border-radius: 10px;
     margin: 20px auto;
@@ -22,10 +30,9 @@ body {
     z-index: 1000;
 }
 
-
 .loginButton {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #00ff2f; /* COLORE4 */
+    color: #001d3d; /* COLORE0 */
     padding: 14px 20px;
     font-size: 12px;
     margin: 8px 0;
@@ -36,9 +43,9 @@ body {
 }
 
 .logoutButton {
-    background-color: #f44336;
+    background-color: #00ff2f; /* COLORE4 */
     font-size: 12px;
-    color: white;
+    color: #000814; /* COLORE0 */
     padding: 14px 20px;
     margin: 8px 0;
     border: none;
@@ -48,7 +55,7 @@ body {
 }
 
 .user_preview_card {
-    background-color: rgba(255, 255, 255, 0.337);
+    background-color: #003566; /* COLORE3 */
     display: flex;
     width: 70%;
     justify-content: space-between;
@@ -59,8 +66,7 @@ body {
 }
 
 .createPost {
-    background-color: rgb(2, 40, 83, 0.5);
-    color: white;
+    color: #d1eaf6; /* COLORE0 */
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -83,11 +89,12 @@ form {
     display: flex;
     flex-direction: column;
     align-items: center;
+    color: #d1eaf6; /* COLORE0 */
 }
 
 .likeButton {
-    background-color: #4caf4f00;
-    color: white;
+    background-color: #4caf4f00; /* COLORE5 */
+    color: #00ff2f; /* COLORE4 */
     height: 30px;
     width: 30px;
     padding: 2px 2px;
@@ -98,7 +105,7 @@ form {
     text-align: center;
 }
 
-.formLike{
+.formLike {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -111,63 +118,68 @@ form {
     align-items: center;
 }
 
-.profileImageSearch{
+.profileImageSearch {
     object-fit: cover;
     width: 50px;
     height: 50px;
     border-radius: 50%;
     margin: 10px;
-    color: black;
-
+    color: #00ff2f; /* COLORE4 */
 }
 
-.profileImageSearch:hover{
+.profileImageSearch:hover {
     z-index: 1001;
     transform: scale(2.5);
 }
 
-.icon{
-    color: rgba(2, 30, 63, 1);
+.icon {
+    color: #00ff2f; /* COLORE4 */
     height: 30px;
     width: 30px;
     padding: 10px;
     cursor: pointer;
-
 }
 
-.login{
+.login {
     padding: 50px;
     border-radius: 30px;
-    background-color: rgba(255, 255, 255, 0.337);
+    background-color: #003566; /* COLORE3 */
     display: flex;
     flex-direction: column;
     align-items: center;
+    color: #001d3d; /* COLORE0 */
 }
 
-.formField{
+.login h2 {
+    color: #d1eaf6; /* COLORE0 */
+}
+
+.formField {
+    background-color: #000814; /* COLORE4 */
+    color: #d1eaf6; /* COLORE0 */
     margin: 10px;
     padding: 10px;
     border-radius: 10px;
     width: 100%;
 }
 
-.formButton{
+.formButton {
     margin: 10px;
     padding: 10px;
     border-radius: 10px;
     width: 50%;
-    background-color: #4CAF50;
-    color: white;
+    background-color: #00ff2f; /* COLORE4 */
+    color: #001d3d; /* COLORE0 */
     border: none;
     cursor: pointer;
 }
 
-.formButton:hover{
-    background-color: #45a049;
+.formButton:hover {
+    background-color: #fb860038; /* COLORE4 con leggera trasparenza */
 }
 
-.navIcon{
-    color: rgba(2, 30, 63, 1);
+.navIcon {
+    color: #003566; /* COLORE4 */
     height: 30px;
     width: 30px;
     padding: 10px;
@@ -175,8 +187,7 @@ form {
 }
 
 .profileInfo {
-    background-color: #f9f9f98f;
-    border: 2px solid #ddd;
+    background-color: #003566; /* COLORE3 */
     border-radius: 30px;
     padding: 20px;
     margin: 20px;
@@ -185,28 +196,28 @@ form {
 
 .profileInfo h1 {
     font-size: 40px;
-    color: #333;
+    color: #d1eaf6; /* COLORE0 */
 }
 
 .profileInfo h2 {
     font-size: 18px;
-    color: #555;
+    color: #d1eaf6;
 }
 
 .profileInfo h3 {
     font-size: 16px;
-    color: #777;
+    color: #00ff2f;
 }
 
 .profileInfo h4 {
     font-size: 14px;
-    color: #999;
+    color: #d1eaf6;
     margin-bottom: 5px;
 }
 
 .profileImage {
     object-fit: cover;
-    border: solid 3px blue;
+    border: solid 3px #00ff2f;
     width: 200px;
     height: 200px;
     border-radius: 50%;
@@ -216,22 +227,22 @@ form {
 
 .profileImage:hover {
     object-fit: cover;
-    background-color: white;
+    background-color: #00ff2f;
     z-index: 1000;
     transform: scale(2);
 }
 
-.modificaProfileImg{
+.modificaProfileImg {
     width: 40%;
     display: flex;
     flex-direction: row;
 }
 
-.editProfileButton{
-    background-color: #4CAF50;
+.editProfileButton {
+    background-color: #00ff2f; /* COLORE5 */
     width: 50px;
     height: 50px;
-    color: white;
+    color: #003566;
     padding: 10px;
     font-size: 12px;
     margin: 8px 0;
@@ -241,19 +252,19 @@ form {
     text-align: center;
 }
 
-.flex_orizzontale{
+.flex_orizzontale {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 
-.full_width{
+.full_width {
     width: 100%;
     align-items: center;
 }
 
-.flex_centred{
+.flex_centred {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -265,9 +276,10 @@ form {
     margin-bottom: 10px;
     border-radius: 30px;
 }
-.viewCommentsButton{
-    background-color: #4caf4f00;
-    color: white;
+
+.viewCommentsButton {
+    background-color: #4caf4f00; /* COLORE5 */
+    color: #00ff2f;
     height: 30px;
     width: 30px;
     padding: 2px 2px;
@@ -278,7 +290,7 @@ form {
     text-align: center;
 }
 
-.flex_orizzontale_full{
+.flex_orizzontale_full {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -287,8 +299,8 @@ form {
 }
 
 .followButton {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #00ff2f; /* COLORE5 */
+    color: #003566;
     padding: 14px 20px;
     font-size: 12px;
     margin: 8px 0;
@@ -299,9 +311,9 @@ form {
 }
 
 .unfollowButton {
-    background-color: #f44336;
+    background-color: #00ff2f; /* COLORE6 */
     font-size: 12px;
-    color: white;
+    color: #003566;
     padding: 14px 20px;
     margin: 8px 0;
     border: none;
@@ -310,17 +322,17 @@ form {
     text-align: center;
 }
 
-.linkUserPage{
-    color: white;
+.linkUserPage {
+    color: #d1eaf6;
     text-decoration: none;
 }
 
-.linkUserPage:hover{
-    color: blue;
+.linkUserPage:hover {
+    color: #00ff2f;
     text-decoration: none;
 }
 
-.position_map{
+.position_map {
     width: 95%;
     height: 95%;
 }
@@ -332,12 +344,11 @@ form {
     margin-bottom: 10px;
 }
 
-.card{
-    background-color: rgba(255, 255, 255, 0.337);
+.card {
+    background-color: #003566;
     width: 400px;
     height: 600px;
     margin: 30px;
-    border: 1px solid blue;
     border-radius: 30px;
     padding: 10px;
     align-items: center;
@@ -346,7 +357,7 @@ form {
     flex-direction: column;
 }
 
-.posts{
+.posts {
     margin: 30px;
     width: 90%;
     display: flex;
@@ -356,36 +367,35 @@ form {
     align-items: center;
 }
 
-.profileImageComment{
+.profileImageComment {
     object-fit: cover;
     width: 15px;
     height: 15px;
     border-radius: 50%;
     margin: 3px;
-    color: black;
+    color: #00ff2f;
 }
 
-.profileImageComment:hover{
+.profileImageComment:hover {
     z-index: 1001;
     transform: scale(2.5);
 }
 
-.usernameComment{
+.usernameComment {
     font-size: 8px;
-    color: black;
+    color: #d1eaf6;
 }
 
-.comment{
+.comment {
     display: flex;
     width: 90%;
     flex-direction: column;
     align-items: left;
     justify-content: space-evenly;
-    stroke: black;
 }
 
-.comments{
-    background: rgba(255, 255, 255, 0.337);
+.comments {
+    background: #003566;
     display: flex;
     width: 300px;
     margin-right: 30px;
@@ -396,15 +406,14 @@ form {
     overflow-y: auto;
 }
 
-hr{
+hr {
     width: 90%;
-    color: black;
+    color: #00ff2f;
 }
 
 .hidden {
     display: none;
 }
-
 
 .postImage {
     width: 200px; /* Adatta le immagini alla larghezza del loro contenitore */
@@ -412,10 +421,13 @@ hr{
     object-fit: cover; /* Ridimensiona l'immagine mantenendo le proporzioni */
     border-radius: 30px;
     margin: 10px;
+    background-color: #a3f7a8;
+    border: solid 3px #00ff2f;
 }
 
-.images_post{
-    background: rgba(255, 255, 255, 0.337);
+.images_post {
+    background: #a3f7a8;
+    border: solid 3px #00ff2f;
     display: flex;
     width: 300px;
     height: 500px;
@@ -427,7 +439,8 @@ hr{
     overflow-y: auto;
 }
 
-.postImage:hover{
+.postImage:hover {
     z-index: 1001;
-    transform: scale(1.5);
+    transform: scale(1.45);
+    
 }

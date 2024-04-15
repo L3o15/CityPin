@@ -91,9 +91,9 @@
         </div>
 
     </div>
-    <div class = "login">
+    <div class="login">
         <h2>Create a new post</h2>
-        <form action="/createPost" method="POST" enctype="multipart/form-data">
+        <form action="/createPost" method="POST" enctype="multipart/form-data" id="postForm">
             <input class="formField" type="text" name="city" placeholder="City name" required>
             <textarea class="formField" name="post_text" rows="5" cols="50" placeholder="Write your post text here" required></textarea>
             <div class="flex_orizzontale">
@@ -111,6 +111,7 @@
             <input class="formButton" type="submit" value="Post">
         </form>        
     </div>
+    
     <br>
     <br>
     <div class = "posts">
@@ -250,5 +251,30 @@
     }
 
     
+</script>
+<script>
+    const postForm = document.getElementById('postForm');
+    const arrivalDateInput = document.getElementById('arrival_date');
+    const departureDateInput = document.getElementById('departure_date');
+
+    arrivalDateInput.addEventListener('change', function() {
+        const arrivalDate = new Date(arrivalDateInput.value);
+        const departureDate = new Date(departureDateInput.value);
+
+        if (arrivalDate > departureDate) {
+            alert('Departure date cannot be earlier than arrival date.');
+            departureDateInput.value = '';
+        }
+    });
+
+    postForm.addEventListener('submit', function(event) {
+        const arrivalDate = new Date(arrivalDateInput.value);
+        const departureDate = new Date(departureDateInput.value);
+
+        if (arrivalDate > departureDate) {
+            event.preventDefault();
+            alert('Departure date cannot be earlier than arrival date.');
+        }
+    });
 </script>
 </html>
