@@ -338,6 +338,7 @@ form {
 }
 
 .position_map {
+    border: solid 3px #00ff2f;
     height: 400px;
     padding: 20px;
     border-radius: 30px;
