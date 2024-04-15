@@ -112,12 +112,18 @@ form {
 }
 
 .profileImageSearch{
+    object-fit: cover;
     width: 50px;
     height: 50px;
     border-radius: 50%;
     margin: 10px;
     color: black;
 
+}
+
+.profileImageSearch:hover{
+    z-index: 1001;
+    transform: scale(2.5);
 }
 
 .icon{
@@ -199,11 +205,20 @@ form {
 }
 
 .profileImage {
+    object-fit: cover;
+    border: solid 3px blue;
     width: 200px;
     height: 200px;
     border-radius: 50%;
     margin: 10px;
     color: black;
+}
+
+.profileImage:hover {
+    object-fit: cover;
+    background-color: white;
+    z-index: 1000;
+    transform: scale(2);
 }
 
 .modificaProfileImg{
@@ -342,11 +357,17 @@ form {
 }
 
 .profileImageComment{
+    object-fit: cover;
     width: 15px;
     height: 15px;
     border-radius: 50%;
     margin: 3px;
     color: black;
+}
+
+.profileImageComment:hover{
+    z-index: 1001;
+    transform: scale(2.5);
 }
 
 .usernameComment{
@@ -366,7 +387,8 @@ form {
 .comments{
     background: rgba(255, 255, 255, 0.337);
     display: flex;
-    width: 600px;
+    width: 300px;
+    margin-right: 30px;
     height: 500px;
     flex-direction: column;
     align-items: center;
@@ -377,4 +399,35 @@ form {
 hr{
     width: 90%;
     color: black;
+}
+
+.hidden {
+    display: none;
+}
+
+
+.postImage {
+    width: 200px; /* Adatta le immagini alla larghezza del loro contenitore */
+    height: auto; /* Impedisce il ridimensionamento distorso delle immagini */
+    object-fit: cover; /* Ridimensiona l'immagine mantenendo le proporzioni */
+    border-radius: 30px;
+    margin: 10px;
+}
+
+.images_post{
+    background: rgba(255, 255, 255, 0.337);
+    display: flex;
+    width: 300px;
+    height: 500px;
+    padding-top: 55px;
+    padding-bottom: 55px;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 30px;
+    overflow-y: auto;
+}
+
+.postImage:hover{
+    z-index: 1001;
+    transform: scale(1.5);
 }

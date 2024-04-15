@@ -93,28 +93,29 @@
     </div>
     <div class = "login">
         <h2>Create a new post</h2>
-        <form action = "/createPost" method = "POST">
-            <input class = "formField" type = "text" name = "city" placeholder = "City name" required>
-            <textarea class = "formField" name = "post_text" rows = "5" cols = "50" placeholder = "Write your post text here" required></textarea>
-            <div class = "flex_orizzontale">
-                <label class = "formField" for="arrival_date">Arrival Date:</label>
-                <input class = "formField" type="date" id="arrival_date" name="arrival_date" required>
+        <form action="/createPost" method="POST" enctype="multipart/form-data">
+            <input class="formField" type="text" name="city" placeholder="City name" required>
+            <textarea class="formField" name="post_text" rows="5" cols="50" placeholder="Write your post text here" required></textarea>
+            <div class="flex_orizzontale">
+                <label class="formField" for="arrival_date">Arrival Date:</label>
+                <input class="formField" type="date" id="arrival_date" name="arrival_date" required>
             </div>
             <br>
-            <div class = "flex_orizzontale">
-                <label class = "formField" for="departure_date">Departure Date:</label>
-                <input class = "formField" type="date" id="departure_date" name="departure_date" required>
+            <div class="flex_orizzontale">
+                <label class="formField" for="departure_date">Departure Date:</label>
+                <input class="formField" type="date" id="departure_date" name="departure_date" required>
             </div>
-            
             <br>
-            <input class = "formButton" type = "submit" value = "Post">
-        </form>
+            <input class="formField" type="file" id="image" name="image[]" multiple accept="image/*">
+            <br>
+            <input class="formButton" type="submit" value="Post">
+        </form>        
     </div>
     <br>
     <br>
     <div class = "posts">
         {% for post in posts %}
-            <div class = "flex_orizzontale">
+            <div class = "flex_orizzontale" id = "postInfoContainer">
                 <div class="card">
                     <div class = "flex_orizzontale">
                         <h1>{{ post['text'] }}</h1>
@@ -193,8 +194,18 @@
                         </button>
                     </form>
                 </div>
+                {% if post['images']%}
+                    <div id="postImagesContainer_{{ loop.index }}" class="images_post">
+                        {% for image in post['images'] %}
+                            <img class="postImage" src="{{ image }}" alt="Immagine del post">
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-    {% endfor %}
+            
+        {% endfor %}
+    </div>
+    
 </body>
 <script>
     function toggleCommentSection(index) {

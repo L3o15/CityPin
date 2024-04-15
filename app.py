@@ -12,9 +12,11 @@ app = Flask(__name__)
 app.secret_key = 'super secret key'
 
 UPLOAD_FOLDER = './static/profile_images/'  # Cartella in cui salvare le immagini
+UPLOAD_FOLDER_POST_IMAGES = './static/post_images/'  # Cartella in cui salvare le immagini dei post
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Estensioni di file consentite
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER_POST_IMAGES'] = UPLOAD_FOLDER_POST_IMAGES
 
 def hash_password(password):
     # Genera un salt (sale) casuale
@@ -142,6 +144,21 @@ def get_post_info(post_id):
             'profile_image': c[4],
             'user_id': c[5]
         })
+        
+    cursor.execute(
+        '''
+        SELECT post_images.image_url FROM post_images WHERE post_id = ?
+        ''',
+        (post[0],)
+    )
+    
+    images = cursor.fetchall()
+    
+    images_url = []
+    
+    for im in images:
+        images_url.append(im[0])
+    
     
     conn.commit()
     conn.close()
@@ -159,7 +176,8 @@ def get_post_info(post_id):
         'profile_image': post[10],
         'user_id': post[11],
         'comments': post_comm,
-        'n_comments': len(post_comm)
+        'n_comments': len(post_comm),
+        'images': images_url,
     }
     return ret
 
@@ -427,12 +445,33 @@ def add_post():
             pin_id = cursor.lastrowid
         else:
             pin_id = pin_id[0]
+            
         cursor.execute(
             '''
             INSERT INTO post (pin_id, user_id, text, date, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?, ?)
             ''',
             (pin_id, user_id, text, current_date, arrival_date, departure_date)
         )
+        
+        post_id = cursor.lastrowid
+        #
+        images = request.files.getlist('image[]')
+        i = 0
+        for image in images:
+            if image.filename != '':
+                image_path = os.path.join(app.config['UPLOAD_FOLDER_POST_IMAGES'], f'post{post_id}_image{i}.png')
+                image.save(image_path)
+                image_path = os.path.join('/static/post_images/', f'post{post_id}_image{i}.png')
+                i += 1
+                cursor.execute(
+                    '''
+                    INSERT INTO post_images (post_id, image_url) VALUES (?, ?)
+                    ''',
+                    (post_id, image_path)
+                )
+        #
+        
+        
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
@@ -568,7 +607,7 @@ def home():
     for id in follows_id:
         posts += get_user_posts(id)
         
-    posts = sorted(posts, key=lambda x: x['date'], reverse=True)
+    posts = sorted(posts, key=lambda x: x['id'], reverse=True)
     
     return render_template('home.html', posts = posts, user = session['user'])
 
@@ -603,8 +642,9 @@ def positions():
                 start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
                 end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
                 pos = [x for x in pos if (x['arrival_date'] == "" and x['departure_date'] == "") or 
-                            (x['arrival_date'] is not None and datetime.strptime(x['arrival_date'], '%Y-%m-%d') >= start_date_obj and 
-                            x['departure_date'] is not None and datetime.strptime(x['departure_date'], '%Y-%m-%d') <= end_date_obj)]
+                    (x['arrival_date'] is not None and datetime.strptime(x['arrival_date'], '%Y-%m-%d') <= end_date_obj and 
+                    x['departure_date'] is not None and datetime.strptime(x['departure_date'], '%Y-%m-%d') >= start_date_obj)]
+
             if city:
                 coord = ottieni_coordinate(city)
                 if not coord:

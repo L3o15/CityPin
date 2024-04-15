@@ -168,6 +168,13 @@
                         </button>
                     </form>
                 </div>
+                {% if post['images']%}
+                    <div id="postImagesContainer_{{ loop.index }}" class="images_post">
+                        {% for image in post['images'] %}
+                            <img class="postImage" src="{{ image }}" alt="Immagine del post">
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
