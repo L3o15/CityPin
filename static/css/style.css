@@ -445,3 +445,68 @@ hr {
     transform: scale(1.45);
     
 }
+
+@media only screen and (max-width: 600px) {
+
+    html {
+        width: 90%;
+		margin: 0;
+		padding: 0;
+        align-items: center;
+		overflow-x: hidden;
+    }
+
+
+    .login{
+        padding: 10px; /* Ridotto il padding */
+    }
+
+    .navbar {
+        width: 90%; /* Ridotto per adattarsi al dispositivo mobile */
+        padding: 5px; /* Ridotto il padding */
+        margin: 10px auto; /* Ridotto il margine */
+    }
+
+
+    .position_map {
+        height: 200px; /* Ridotto per adattarsi al dispositivo mobile */
+    }
+
+    .map {
+        width: 90%; /* Ridotto per adattarsi al dispositivo mobile */
+    }
+
+    .card,
+    .posts {
+        width: 80%; /* Ridotto per adattarsi al dispositivo mobile */
+        margin: 10px auto; /* Ridotto il margine */
+    }
+
+    .profileImageComment {
+        width: 10px; /* Ridotto per adattarsi al dispositivo mobile */
+        height: 10px; /* Ridotto per adattarsi al dispositivo mobile */
+    }
+
+    .usernameComment {
+        font-size: 6px; /* Ridotto per adattarsi al dispositivo mobile */
+    }
+
+    .postImage {
+        width: 150px; /* Ridotto per adattarsi al dispositivo mobile */
+    }
+
+    .images_post {
+        width: 90%; /* Ridotto per adattarsi al dispositivo mobile */
+        height: 400px; /* Ridotto per adattarsi al dispositivo mobile */
+        padding-top: 30px; /* Ridotto per adattarsi al dispositivo mobile */
+        padding-bottom: 30px; /* Ridotto per adattarsi al dispositivo mobile */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .images_post img {
+        display: block !important;
+        margin: 0 auto !important;
+    }
+}

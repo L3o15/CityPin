@@ -180,10 +180,17 @@
     </div>
     <script>
         function toggleCommentSection(index) {
-            var commentSection = document.getElementById("commentSection_" + index);
+            let commentSection = document.getElementById("commentSection_" + index);
+            let imagesContainer = document.getElementById("postImagesContainer_" + index);
             if (commentSection.style.display === "none") {
+                if (imagesContainer){
+                    imagesContainer.style.display = "none";
+                }
                 commentSection.style.display = "block";
             } else {
+                if (imagesContainer){
+                    imagesContainer.style.display = "block";
+                }
                 commentSection.style.display = "none";
             }
         }
