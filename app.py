@@ -14,6 +14,7 @@ app.secret_key = 'super secret key'
 UPLOAD_FOLDER = './static/profile_images/'  # Cartella in cui salvare le immagini
 UPLOAD_FOLDER_POST_IMAGES = './static/post_images/'  # Cartella in cui salvare le immagini dei post
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Estensioni di file consentite
+DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'cityPin.db')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['UPLOAD_FOLDER_POST_IMAGES'] = UPLOAD_FOLDER_POST_IMAGES
@@ -26,7 +27,7 @@ def hash_password(password):
     return hashed_password
 
 def login_user(username, password):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
     # Esegui una query per ottenere la password hashata dell'utente dal database
@@ -55,7 +56,7 @@ def ottieni_coordinate(nome_citta):
         return None
 
 def get_user_posts(user_id):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -77,7 +78,7 @@ def get_user_posts(user_id):
     return ret
 
 def get_post_info(post_id):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -188,7 +189,7 @@ def allowed_file(filename):
 @app.route('/userPage')
 def index():
     if 'user' in session:
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         
         posts = get_user_posts(session['user'][0])
@@ -244,7 +245,7 @@ def register():
         # Se il file non è valido, restituisci un errore
         return 'Invalid file', 400
     
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
     # Esegui l'insert nella tabella degli utenti
@@ -262,7 +263,7 @@ def login():
     password = request.form['password']
     
     if login_user(username, password):
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
@@ -280,7 +281,7 @@ def logout():
 
 @app.route('/search')
 def search():
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -293,7 +294,7 @@ def search():
 
 @app.route('/user/<int:user_id>/')
 def user(user_id):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -328,7 +329,7 @@ def user(user_id):
 @app.route('/userPage/<username>')
 def user_page(username):
     print(username)
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -343,7 +344,7 @@ def user_page(username):
 @app.route('/searchUser', methods=['POST'])
 def search_user():
     user_name = request.form['user_name']
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -361,7 +362,7 @@ def search_user():
 def add_follower(user_id):
     if 'user' in session:  
         user_follower_id = session['user'][0]
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         
         cursor.execute(
@@ -390,7 +391,7 @@ def add_follower(user_id):
 def remove_follower(user_id):
     if 'user' in session:
         user_follower_id = session['user'][0]
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         
         cursor.execute(
@@ -422,7 +423,7 @@ def add_post():
         if not coordinate:
             return 'Città non trovata', 404
         
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         
         cursor.execute(
@@ -481,7 +482,7 @@ def add_post():
 
 @app.route('/addLike/<int:post_id>/<int:user_id>/<int:h>', methods=['POST'])
 def add_like(post_id, user_id, h):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -508,7 +509,7 @@ def add_like(post_id, user_id, h):
 
 @app.route('/removeLike/<int:post_id>/<int:user_id>/<int:h>', methods=['POST'])
 def remove_like(post_id, user_id, h):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -530,7 +531,7 @@ def updateAccount():
     username = request.form['username']
     
     # Verifica se lo username è già presente nel database
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT COUNT(*) FROM users WHERE username = ?', (username,))
     existing_user_count = cursor.fetchone()[0]
@@ -560,14 +561,14 @@ def updateAccount():
     id = session['user'][0]
     
     if image_url == "":
-        conn = sqlite3.connect('./static/data/cityPin.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         cursor.execute('SELECT profile_image FROM users WHERE id = ?', (id,))
         image_url = cursor.fetchone()[0]
         conn.commit()
         conn.close()
     # Esegui l'aggiornamento nella tabella degli utenti
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute('UPDATE users SET description = ?, profile_image = ?, username = ? WHERE id = ?', 
                    (description, image_url, username, id))
@@ -590,7 +591,7 @@ def updateAccount():
 
 @app.route('/home')
 def home():
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -624,7 +625,7 @@ def positions():
         pos = []
         
         if username:
-            conn = sqlite3.connect('./static/data/cityPin.db')
+            conn = sqlite3.connect(DATABASE_PATH)
             cursor = conn.cursor()
             cursor.execute(
                 '''
@@ -654,7 +655,7 @@ def positions():
                 return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
             return render_template('positions.html', pos = pos, default = False, user = session['user'])
         elif(start_date and end_date):
-            conn = sqlite3.connect('./static/data/cityPin.db')
+            conn = sqlite3.connect(DATABASE_PATH)
             cursor = conn.cursor()
             cursor.execute(
                 '''
@@ -680,7 +681,7 @@ def positions():
                 return render_template('positions.html', error = 'Nessuna infornazione trovata', user = session['user'])
             return render_template('positions.html', pos = pos, default = False, user = session['user'])
         elif city:
-            conn = sqlite3.connect('./static/data/cityPin.db')
+            conn = sqlite3.connect(DATABASE_PATH)
             cursor = conn.cursor()
             coord = ottieni_coordinate(city)
             if not coord:
@@ -712,7 +713,7 @@ def addComment(post_id, h):
     text = request.form['comment']
     user_id = session['user'][0]
     current_date = datetime.now().date()
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''
@@ -732,7 +733,7 @@ def addComment(post_id, h):
 
 @app.route('/deletePost/<int:post_id>')
 def delete_post(post_id):
-    conn = sqlite3.connect('./static/data/cityPin.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute(
         '''

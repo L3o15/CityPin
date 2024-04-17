@@ -49,10 +49,10 @@
     <div id="map" class="position_map"></div>
     <div class = "posts">
         {% for post in pos %}
-        <div class="flex_orizzontale">
+        <div class="flex_post">
             <div class="card">
                 <div class = "flex_orizzontale_full">
-                    <div class = "flex_orizzontale">
+                    <div class = "flex_orizzontale_originale">
                         <div class = "profileImg">
                             {% if post['profile_image'] and post['profile_image'] != "" %}
                                 <img class = "profileImageSearch" src={{ post['profile_image'] }} alt="Immagine del profilo">
@@ -95,7 +95,7 @@
                         <p> {{post['n_likes']}}</p>
                     </form>
                     {% endif %}
-                    <div class = "flex_orizzontale">
+                    <div class = "flex_orizzontale_originale">
                         <p>{{post['n_comments']}}</p>
                         <button type="button" class="viewCommentsButton" onclick="toggleCommentSection({{ loop.index }})" class = "flex_orizzontale">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -109,8 +109,8 @@
                 <div class = "comments">
                     {%for comment in post['comments']%}
                         <div class = "comment">
-                            <div class = "flex_orizzontale">
-                                <div class = "flex_orizzontale">
+                            <div class = "flex_orizzontale_originale">
+                                <div class = "flex_orizzontale_originale">
                                     <div class = "profileImg">
                                         {% if comment['profile_image'] and comment['profile_image'] != "" %}
                                             <img class = "profileImageComment" src={{ comment['profile_image'] }} alt="Immagine del profilo">
