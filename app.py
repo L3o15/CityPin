@@ -46,8 +46,8 @@ def login_user(username, password):
     return False
 
 def ottieni_coordinate(nome_citta):
-    geolocatore = Nominatim(user_agent="nome_applicazione")
-    posizione = geolocatore.geocode(nome_citta)
+    geolocator = Nominatim(user_agent="nome_applicazione")
+    posizione = geolocator.geocode(nome_citta)
     if posizione:
         latitudine = posizione.latitude
         longitudine = posizione.longitude
@@ -738,6 +738,26 @@ def delete_post(post_id):
     cursor.execute(
         '''
         DELETE FROM post WHERE id = ?
+        ''',
+        (post_id,)
+    )
+    
+    cursor.execute(
+        '''
+        DELETE FROM likes WHERE post_id = ?
+        ''',
+        (post_id,)
+    )
+    
+    cursor.execute(
+        '''
+        DELETE FROM comments WHERE post_id = ?
+        ''',
+        (post_id,)
+    )
+    cursor.execute(
+        '''
+        DELETE FROM post_images WHERE post_id = ?
         ''',
         (post_id,)
     )
